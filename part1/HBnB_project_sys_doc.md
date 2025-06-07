@@ -6,7 +6,7 @@ HBnB is a simplified version of the Airbnb platform. This documentation provides
 
 ---
 
-## 📐 1. System Sequence Diagram: Booking Process
+## 1. System Sequence Diagram: Booking Process
 
 ### 🧱 Actors
 
