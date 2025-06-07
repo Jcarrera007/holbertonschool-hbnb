@@ -98,5 +98,3 @@ This section describes how users interact with the platform from searching for p
 ## Conclusion
 
 This document provides a comprehensive, unified view of the HBnB application's architecture. It is intended to serve as a reference throughout the implementation and testing phases. All design choices promote scalability, maintainability, and clarity of system interactions.
-
-> Next Steps: Begin implementing modules as per the order and structure defined here, starting with the base models and their respective unit tests.
