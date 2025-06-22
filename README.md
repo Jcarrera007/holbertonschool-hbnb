@@ -96,7 +96,7 @@ graph TB
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/holbertonschool-hbnb.git
+   git clone https://github.com/Jcarrera007/holbertonschool-hbnb.git
    cd holbertonschool-hbnb
    ```
 
