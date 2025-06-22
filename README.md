@@ -25,7 +25,6 @@
 - [🛠️ Development](#️-development)
 - [📊 API Documentation](#-api-documentation)
 - [🔄 Project Phases](#-project-phases)
-- [🤝 Contributing](#-contributing)
 
 ---
 
