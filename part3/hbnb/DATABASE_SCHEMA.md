@@ -1,4 +1,8 @@
-# HBnB Database Schema Diagram
+# HBnB Database Schema Documentation
+
+## Overview
+
+This document provides comprehensive documentation for the HBnB application database schema, including entity relationships, constraints, and SQLAlchemy model mappings.
 
 ## Entity Relationship Diagram
 
@@ -52,66 +56,27 @@ erDiagram
     %% Relationships
     USERS ||--o{ PLACES : "owns (1:many)"
     USERS ||--o{ REVIEWS : "writes (1:many)"
-    PLACES ||--o{ REVIEWS : "has (1:many)"
+    PLACES ||--o{ REVIEWS : "receives (1:many)"
     PLACES }o--o{ AMENITIES : "features (many:many)"
     PLACES ||--|| PLACE_AMENITY : "through"
     AMENITIES ||--|| PLACE_AMENITY : "through"
 ```
 
-## Database Constraints and Business Rules
-
-### Primary Keys
-- All entities use UUID strings as primary keys for global uniqueness
-- UUIDs are generated automatically using Python's `uuid.uuid4()`
-
-### Foreign Key Relationships
-1. **PLACES.owner_id → USERS.id**
-   - Each place must have an owner (user)
-   - Cascade delete: when a user is deleted, their places are deleted
-
-2. **REVIEWS.user_id → USERS.id**
-   - Each review must be written by a user
-   - Cascade delete: when a user is deleted, their reviews are deleted
-
-3. **REVIEWS.place_id → PLACES.id**
-   - Each review must be for a specific place
-   - Cascade delete: when a place is deleted, its reviews are deleted
-
-4. **PLACE_AMENITY Association Table**
-   - Links places to amenities in a many-to-many relationship
-   - Cascade delete: when place or amenity is deleted, associations are removed
-
-### Unique Constraints
-- `USERS.email` - Each user must have a unique email address
-- `AMENITIES.name` - Each amenity name must be unique
-- `REVIEWS(user_id, place_id)` - One review per user per place
-
-### Check Constraints
-- `REVIEWS.rating` - Must be between 1 and 5 (inclusive)
-- `PLACES.price` - Must be positive
-- `PLACES.latitude` - Must be between -90 and 90
-- `PLACES.longitude` - Must be between -180 and 180
-
-### Indexes for Performance
-- `idx_users_email` on USERS.email for login lookups
-- `idx_places_owner_id` on PLACES.owner_id for owner's places
-- `idx_reviews_user_id` on REVIEWS.user_id for user's reviews
-- `idx_reviews_place_id` on REVIEWS.place_id for place reviews
-
-## SQLAlchemy Model Relationships
+## SQLAlchemy Model Architecture
 
 ```mermaid
 classDiagram
-    class BaseModelDB {
+    class BaseModel {
         +String id
         +DateTime created_at
         +DateTime updated_at
         +save()
         +update(data)
-        +delete()
         +to_dict()
+        +__str__()
+        +__repr__()
     }
-
+    
     class UserDB {
         +String first_name
         +String last_name
@@ -121,8 +86,10 @@ classDiagram
         +set_password(password)
         +check_password(password)
         +find_by_email(email)
+        +List~PlaceDB~ places
+        +List~ReviewDB~ reviews
     }
-
+    
     class PlaceDB {
         +String title
         +String description
@@ -130,61 +97,308 @@ classDiagram
         +Float latitude
         +Float longitude
         +String owner_id
+        +UserDB owner
+        +List~ReviewDB~ reviews
+        +List~AmenityDB~ amenities
         +find_by_owner(owner_id)
+        +_validate()
     }
-
+    
     class ReviewDB {
         +String text
         +Integer rating
         +String user_id
         +String place_id
+        +UserDB user
+        +PlaceDB place
         +find_by_place(place_id)
         +find_by_user(user_id)
         +find_by_user_and_place(user_id, place_id)
+        +_validate()
     }
-
+    
     class AmenityDB {
         +String name
+        +List~PlaceDB~ places
         +find_by_name(name)
+        +_validate()
     }
-
-    BaseModelDB <|-- UserDB
-    BaseModelDB <|-- PlaceDB
-    BaseModelDB <|-- ReviewDB
-    BaseModelDB <|-- AmenityDB
-
-    UserDB "1" o-- "many" PlaceDB : owns
-    UserDB "1" o-- "many" ReviewDB : writes
-    PlaceDB "1" o-- "many" ReviewDB : receives
-    PlaceDB "many" o-- "many" AmenityDB : features
-
-
-
-## API Authentication and Authorization
-
-```mermaid
-flowchart TD
-    A[API Request] --> B{Requires JWT?}
-    B -->|No| C[Public Endpoint]
-    B -->|Yes| D{Valid JWT?}
-    D -->|No| E[401 Unauthorized]
-    D -->|Yes| F{Admin Required?}
-    F -->|No| G{Owner Required?}
-    F -->|Yes| H{Is Admin?}
-    H -->|No| I[403 Forbidden]
-    H -->|Yes| J[Allow Access]
-    G -->|No| J
-    G -->|Yes| K{Is Owner or Admin?}
-    K -->|No| I
-    K -->|Yes| J
-    C --> L[Process Request]
-    J --> L
+    
+    db.Model <|-- UserDB
+    db.Model <|-- PlaceDB
+    db.Model <|-- ReviewDB
+    db.Model <|-- AmenityDB
+    
+    UserDB ||--o{ PlaceDB : "owns"
+    UserDB ||--o{ ReviewDB : "writes"
+    PlaceDB ||--o{ ReviewDB : "receives"
+    PlaceDB }o--o{ AmenityDB : "features"
 ```
 
-## Database File Locations
+## Database Tables
 
-- **Development**: `hbnb_dev.db`
-- **Testing**: In-memory SQLite database
-- **Production**: `hbnb_prod.db`
+### Users Table
+Stores user account information and authentication data.
 
-All database files are created in the application root directory unless a full path is specified in the `DATABASE_URL` environment variable.
+```sql
+CREATE TABLE users (
+    id VARCHAR(36) PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL,
+    password_hash VARCHAR(128) NOT NULL,
+    is_admin BOOLEAN DEFAULT FALSE NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+
+CREATE INDEX idx_users_email ON users(email);
+```
+
+**Constraints:**
+- Primary Key: `id` (UUID)
+- Unique: `email`
+- Not Null: `first_name`, `last_name`, `email`, `password_hash`
+- Default: `is_admin = FALSE`
+
+### Places Table
+Stores property/place listings with location and pricing information.
+
+```sql
+CREATE TABLE places (
+    id VARCHAR(36) PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    price REAL NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    owner_id VARCHAR(36) NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_places_owner_id ON places(owner_id);
+```
+
+**Constraints:**
+- Primary Key: `id` (UUID)
+- Foreign Key: `owner_id` → `users(id)` (CASCADE DELETE)
+- Not Null: `title`, `price`, `latitude`, `longitude`, `owner_id`
+- Check: `price > 0`, `latitude BETWEEN -90 AND 90`, `longitude BETWEEN -180 AND 180`
+
+### Reviews Table
+Stores user reviews for places with ratings and text feedback.
+
+```sql
+CREATE TABLE reviews (
+    id VARCHAR(36) PRIMARY KEY,
+    text TEXT NOT NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    user_id VARCHAR(36) NOT NULL,
+    place_id VARCHAR(36) NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE,
+    UNIQUE(user_id, place_id)
+);
+
+CREATE INDEX idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX idx_reviews_place_id ON reviews(place_id);
+```
+
+**Constraints:**
+- Primary Key: `id` (UUID)
+- Foreign Keys: `user_id` → `users(id)`, `place_id` → `places(id)` (CASCADE DELETE)
+- Unique: `(user_id, place_id)` - One review per user per place
+- Check: `rating BETWEEN 1 AND 5`
+- Not Null: `text`, `rating`, `user_id`, `place_id`
+
+### Amenities Table
+Stores available amenities that can be associated with places.
+
+```sql
+CREATE TABLE amenities (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+```
+
+**Constraints:**
+- Primary Key: `id` (UUID)
+- Unique: `name`
+- Not Null: `name`
+
+### Place-Amenity Association Table
+Many-to-many relationship between places and amenities.
+
+```sql
+CREATE TABLE place_amenity (
+    place_id VARCHAR(36) NOT NULL,
+    amenity_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (place_id, amenity_id),
+    FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE,
+    FOREIGN KEY (amenity_id) REFERENCES amenities(id) ON DELETE CASCADE
+);
+```
+
+**Constraints:**
+- Composite Primary Key: `(place_id, amenity_id)`
+- Foreign Keys: `place_id` → `places(id)`, `amenity_id` → `amenities(id)` (CASCADE DELETE)
+
+## Authentication and Authorization Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant JWT
+    participant Auth
+    participant DB
+    
+    Note over Client,DB: User Registration
+    Client->>API: POST /api/v1/users (admin only)
+    API->>Auth: Check admin privileges
+    Auth->>API: Authorization result
+    API->>DB: Create user with hashed password
+    DB->>API: User created
+    API->>Client: 201 Created
+    
+    Note over Client,DB: User Login
+    Client->>API: POST /api/v1/auth/login
+    API->>DB: Find user by email
+    DB->>API: User data
+    API->>Auth: Verify password
+    Auth->>JWT: Generate JWT token
+    JWT->>API: Access token
+    API->>Client: 200 OK + token
+    
+    Note over Client,DB: Protected Resource Access
+    Client->>API: GET /api/v1/users/me (with JWT)
+    API->>JWT: Validate token
+    JWT->>Auth: Extract user identity
+    Auth->>API: User ID and claims
+    API->>DB: Fetch user data
+    DB->>API: User data
+    API->>Client: 200 OK + user data
+```
+
+## Business Rules and Constraints
+
+### User Management
+- **Registration**: Admin-only operation (except for initial setup)
+- **Password Requirements**: Minimum 6 characters, bcrypt hashed
+- **Email Uniqueness**: Each email can only be associated with one account
+- **Admin Privileges**: Required for system-wide operations
+
+### Place Management
+- **Ownership**: Users can only modify their own places (admins can modify any)
+- **Location Validation**: Latitude (-90 to 90), Longitude (-180 to 180)
+- **Price Validation**: Must be positive number
+- **Title Requirements**: Required, maximum 100 characters
+
+### Review System
+- **One Review Per User Per Place**: Enforced by unique constraint
+- **Rating Range**: Integer between 1 and 5 (inclusive)
+- **Ownership**: Users can only modify their own reviews (admins can modify any)
+- **Cascade Deletion**: Reviews deleted when user or place is deleted
+
+### Amenity System
+- **Admin Management**: Only admins can create, update, or delete amenities
+- **Name Uniqueness**: Each amenity name must be unique
+- **Many-to-Many**: Places can have multiple amenities, amenities can be used by multiple places
+
+## Security Features
+
+### Password Security
+- **Bcrypt Hashing**: All passwords hashed using bcrypt with salt
+- **No Plain Text Storage**: Passwords never stored in plain text
+- **API Exclusion**: Password hashes excluded from API responses
+
+### JWT Authentication
+- **Token-Based**: Stateless authentication using JWT tokens
+- **Claims**: User ID and admin status embedded in token
+- **Expiration**: Configurable token expiration (disabled for development)
+
+### Authorization Levels
+1. **Public**: Anonymous access (GET operations for places, amenities, reviews)
+2. **Authenticated**: Requires valid JWT token
+3. **Owner**: Resource owner or admin required
+4. **Admin**: Admin privileges required
+
+## Database Configuration
+
+### Environment-Specific Settings
+
+#### Development
+```python
+SQLALCHEMY_DATABASE_URI = 'sqlite:///hbnb_dev.db'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+```
+
+#### Testing
+```python
+SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+```
+
+#### Production
+```python
+SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///hbnb_prod.db')
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+```
+
+## Performance Optimizations
+
+### Indexes
+- `idx_users_email`: Fast email lookups for authentication
+- `idx_places_owner_id`: Fast owner-based place queries
+- `idx_reviews_user_id`: Fast user review queries
+- `idx_reviews_place_id`: Fast place review queries
+
+### Query Optimizations
+- Relationship loading strategies
+- Eager loading for frequently accessed relationships
+- Lazy loading for optional relationships
+
+## Migration and Initialization
+
+### Database Initialization
+```bash
+# Initialize database with tables
+python init_db.py
+
+# Create tables only
+python -c "from app import create_app, db; app = create_app(); app.app_context().push(); db.create_all()"
+```
+
+### Sample Data Population
+The `init_db.py` script includes sample data:
+- Admin user
+- Regular users
+- Sample amenities
+- Sample places with amenity associations
+- Sample reviews
+
+## Backup and Recovery
+
+### Database Backup
+```bash
+# SQLite backup
+cp hbnb_dev.db hbnb_dev_backup_$(date +%Y%m%d_%H%M%S).db
+```
+
+### Data Export
+```python
+# Export data to SQL
+from app import create_app, db
+app = create_app()
+with app.app_context():
+    # Use SQLAlchemy-Utils or custom export logic
+    pass
+```
+
+This documentation provides a complete reference for the HBnB database schema, relationships, and implementation details.
