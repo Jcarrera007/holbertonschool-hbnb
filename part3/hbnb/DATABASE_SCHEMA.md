@@ -159,6 +159,7 @@ classDiagram
     PlaceDB "many" o-- "many" AmenityDB : features
 
 
+
 ## API Authentication and Authorization
 
 ```mermaid
