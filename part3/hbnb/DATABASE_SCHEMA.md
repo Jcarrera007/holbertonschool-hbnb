@@ -66,15 +66,11 @@ erDiagram
 
 ```mermaid
 classDiagram
-    class BaseModel {
+    class dbModel {
+        <<interface>>
         +String id
         +DateTime created_at
         +DateTime updated_at
-        +save()
-        +update(data)
-        +to_dict()
-        +__str__()
-        +__repr__()
     }
     
     class UserDB {
@@ -86,8 +82,9 @@ classDiagram
         +set_password(password)
         +check_password(password)
         +find_by_email(email)
-        +List~PlaceDB~ places
-        +List~ReviewDB~ reviews
+        +save()
+        +update(data)
+        +to_dict()
     }
     
     class PlaceDB {
@@ -97,11 +94,11 @@ classDiagram
         +Float latitude
         +Float longitude
         +String owner_id
-        +UserDB owner
-        +List~ReviewDB~ reviews
-        +List~AmenityDB~ amenities
         +find_by_owner(owner_id)
         +_validate()
+        +save()
+        +update(data)
+        +to_dict()
     }
     
     class ReviewDB {
@@ -109,30 +106,33 @@ classDiagram
         +Integer rating
         +String user_id
         +String place_id
-        +UserDB user
-        +PlaceDB place
         +find_by_place(place_id)
         +find_by_user(user_id)
         +find_by_user_and_place(user_id, place_id)
         +_validate()
+        +save()
+        +update(data)
+        +to_dict()
     }
     
     class AmenityDB {
         +String name
-        +List~PlaceDB~ places
         +find_by_name(name)
         +_validate()
+        +save()
+        +update(data)
+        +to_dict()
     }
     
-    db.Model <|-- UserDB
-    db.Model <|-- PlaceDB
-    db.Model <|-- ReviewDB
-    db.Model <|-- AmenityDB
+    dbModel <|-- UserDB
+    dbModel <|-- PlaceDB
+    dbModel <|-- ReviewDB
+    dbModel <|-- AmenityDB
     
-    UserDB ||--o{ PlaceDB : "owns"
-    UserDB ||--o{ ReviewDB : "writes"
-    PlaceDB ||--o{ ReviewDB : "receives"
-    PlaceDB }o--o{ AmenityDB : "features"
+    UserDB ||--o{ PlaceDB : owns
+    UserDB ||--o{ ReviewDB : writes
+    PlaceDB ||--o{ ReviewDB : receives
+    PlaceDB }|..|{ AmenityDB : features
 ```
 
 ## Database Tables
