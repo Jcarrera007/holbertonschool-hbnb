@@ -6,37 +6,38 @@ class Config:
     DEBUG = False
     TESTING = False
     
-    # API Configuration
-    API_TITLE = 'HBnB API'
-    API_VERSION = '1.0'
-    API_DESCRIPTION = 'HBnB Application API'
+    # Database configuration
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///hbnb.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Application settings
-    JSON_SORT_KEYS = False
-    RESTX_MASK_SWAGGER = False
-    
-    # JWT Configuration
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt_secret_key_for_hbnb')
-    JWT_ACCESS_TOKEN_EXPIRES = 86400  # 24 hours in seconds
+    # JWT configuration
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt_secret_key')
+    JWT_ACCESS_TOKEN_EXPIRES = False  # For simplicity, tokens don't expire
+
 
 class DevelopmentConfig(Config):
-    """Development configuration with debug enabled."""
+    """Development environment configuration."""
     DEBUG = True
-    
-class ProductionConfig(Config):
-    """Production configuration with optimizations."""
-    DEBUG = False
-    SECRET_KEY = os.getenv('SECRET_KEY', 'production_secret_key_change_me')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DEV_DATABASE_URL', 'sqlite:///hbnb_dev.db')
+
 
 class TestingConfig(Config):
-    """Testing configuration for unit tests."""
+    """Testing environment configuration."""
     TESTING = True
-    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  # In-memory database for tests
+    WTF_CSRF_ENABLED = False
+
+
+class ProductionConfig(Config):
+    """Production environment configuration."""
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///hbnb_prod.db')
+
 
 # Configuration dictionary
 config = {
     'development': DevelopmentConfig,
-    'production': ProductionConfig,
     'testing': TestingConfig,
+    'production': ProductionConfig,
     'default': DevelopmentConfig
 }

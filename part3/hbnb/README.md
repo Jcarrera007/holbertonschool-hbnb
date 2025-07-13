@@ -11,24 +11,11 @@ hbnb/
 │   ├── models/             # Business logic and core entities
 │   ├── services/           # Facade for interacting with persistence and models
 │   ├── persistence/        # In-memory data storage (replaced with SQLAlchemy in Part 3)
-├── documentation/          # 📚 Complete project documentation
 ├── run.py                  # Application entry point
 ├── config.py               # App configuration
 ├── requirements.txt        # Project dependencies
 ├── README.md               # Project documentation
 ```
-
-## 📚 Documentation
-
-All detailed documentation has been organized in the [`documentation/`](./documentation/) folder:
-
-- **[Documentation Index](./documentation/INDEX.md)** - Complete guide to all documentation
-- **[Business Logic Summary](./documentation/BUSINESS_LOGIC_SUMMARY.md)** - Application architecture overview
-- **[Password Implementation](./documentation/PASSWORD_IMPLEMENTATION_SUMMARY.md)** - Security features and password hashing
-- **[API Testing Guide](./documentation/CURL_TESTING_GUIDE.md)** - Comprehensive cURL testing examples
-- **[Quick Start Guide](./documentation/QUICK_START_CURL.md)** - Quick API reference
-- **[Testing Reports](./documentation/TESTING_REPORTS.md)** - Test results and coverage
-- **[WSL Testing Guide](./documentation/WSL_PASSWORD_TESTING.md)** - WSL-specific testing instructions
 
 ---
 
