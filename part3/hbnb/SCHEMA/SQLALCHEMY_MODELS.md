@@ -69,10 +69,10 @@ classDiagram
     dbModel <|-- ReviewDB
     dbModel <|-- AmenityDB
     
-    UserDB ||--o{ PlaceDB : "owns"
-    UserDB ||--o{ ReviewDB : "writes"
-    PlaceDB ||--o{ ReviewDB : "receives"
-    PlaceDB }o--o{ AmenityDB : "features"
+    UserDB --o PlaceDB : "owns"
+    UserDB --o ReviewDB : "writes"
+    PlaceDB --o ReviewDB : "receives"
+    PlaceDB o--o AmenityDB : "features"
 ```
 
 ## Model Descriptions
