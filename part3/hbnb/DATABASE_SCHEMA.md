@@ -111,7 +111,7 @@ classDiagram
         +delete()
         +to_dict()
     }
-    
+
     class UserDB {
         +String first_name
         +String last_name
@@ -122,7 +122,7 @@ classDiagram
         +check_password(password)
         +find_by_email(email)
     }
-    
+
     class PlaceDB {
         +String title
         +String description
@@ -132,7 +132,7 @@ classDiagram
         +String owner_id
         +find_by_owner(owner_id)
     }
-    
+
     class ReviewDB {
         +String text
         +Integer rating
@@ -142,22 +142,22 @@ classDiagram
         +find_by_user(user_id)
         +find_by_user_and_place(user_id, place_id)
     }
-    
+
     class AmenityDB {
         +String name
         +find_by_name(name)
     }
-    
+
     BaseModelDB <|-- UserDB
     BaseModelDB <|-- PlaceDB
     BaseModelDB <|-- ReviewDB
     BaseModelDB <|-- AmenityDB
-    
-    UserDB ||--o{ PlaceDB : "owns"
-    UserDB ||--o{ ReviewDB : "writes"
-    PlaceDB ||--o{ ReviewDB : "receives"
-    PlaceDB }o--o{ AmenityDB : "features"
-```
+
+    UserDB "1" o-- "many" PlaceDB : owns
+    UserDB "1" o-- "many" ReviewDB : writes
+    PlaceDB "1" o-- "many" ReviewDB : receives
+    PlaceDB "many" o-- "many" AmenityDB : features
+
 
 ## API Authentication and Authorization
 
