@@ -67,18 +67,18 @@ HBnB Evolution is built upon a robust **three-layered architecture** that promot
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
 │                 BUSINESS LOGIC LAYER                        │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌───────┐ │
-│  │  User   │ │  Place  │ │ Review  │ │  City   │ │ State │ │
-│  │ Model   │ │ Model   │ │ Model   │ │ Model   │ │ Model │ │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └───────┘ │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌───────┐  │
+│  │  User   │ │  Place  │ │ Review  │ │  City   │ │ State │  │
+│  │ Model   │ │ Model   │ │ Model   │ │ Model   │ │ Model │  │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └───────┘  │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
 │                  PERSISTENCE LAYER                          │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │              Database Storage                           │ │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │              Database Storage                          │ │
 │  │         (Data Access & Repository Pattern)             │ │
-│  └─────────────────────────────────────────────────────────┘ │
+│  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -178,31 +178,31 @@ The Business Logic Layer forms the core of the HBnB Evolution system, encapsulat
           ┌───────────▼──────────────────────────────┐
           │                                          │
           │                                          │
-    ┌─────▼─────┐  ┌─────────▼─────────┐  ┌─────────▼──────────┐
-    │   User    │  │      Place        │  │       Review       │
-    ├───────────┤  ├───────────────────┤  ├────────────────────┤
-    │+ email    │  │+ name: str        │  │+ text: str         │
-    │+ password │  │+ description: str │  │+ rating: int       │
+    ┌─────▼──────┐  ┌─────────▼─────────┐  ┌─────────▼──────────┐
+    │   User     │  │      Place        │  │       Review       │
+    ├────────────┤  ├───────────────────┤  ├────────────────────┤
+    │+ email     │  │+ name: str        │  │+ text: str         │
+    │+ password  │  │+ description: str │  │+ rating: int       │
     │+ first_name│  │+ rooms: int       │  │+ place_id: str     │
-    │+ last_name│  │+ price_by_night   │  │+ user_id: str      │
-    │           │  │+ city_id: str     │  │                    │
-    │           │  │+ user_id: str     │  │                    │
-    └─────┬─────┘  └─────────┬─────────┘  └─────────┬──────────┘
-          │                  │                      │
-          │ owns            │ belongs_to            │ writes
-          │                  │                      │
-          ▼                  ▼                      ▼
-    ┌─────────────┐    ┌─────────────┐        ┌──────────┐
-    │1        *   │    │*        1   │        │1      *  │
-    │User ←──→Place│    │Place ←──→City│        │User ←──→Review│
-    └─────────────┘    └─────────────┘        └──────────┘
+    │+ last_name │  │+ price_by_night   │  │+ user_id: str      │
+    │            │  │+ city_id: str     │  │                    │
+    │            │  │+ user_id: str     │  │                    │
+    └─────┬──────┘  └─────────┬─────────┘  └─────────┬──────────┘
+          │                   │                      │
+          │ owns              │ belongs_to           │ writes
+          │                   │                      │
+          ▼                   ▼                      ▼
+    ┌──────────────┐   ┌──────────────┐        ┌───────────────┐
+    │1        *    │   │*        1    │        │1      *       │
+    │User ←──→Place│   │Place ←──→City│        │User ←──→Review│
+    └──────────────┘   └──────────────┘        └───────────────┘
                              │
                              │ belongs_to
                              ▼
-                       ┌─────────────┐
-                       │*        1   │
+                       ┌──────────────┐
+                       │*        1    │
                        │City ←──→State│
-                       └─────────────┘
+                       └──────────────┘
 
     ┌─────────────┐        ┌─────────────┐
     │    City     │        │    State    │
@@ -417,47 +417,47 @@ This section details the complete user journey through the HBnB Evolution platfo
 ### Diagram: Complete Booking Sequence Flow
 
 ```
-User    Website    HBnB Backend    Payment Gateway    Host    Database
- │        │             │                │           │         │
- │─Search─>│             │                │           │         │
- │        │─Get Places──>│                │           │         │
- │        │             │─Query Places───>│           │         │
- │        │             │<──Results───────│           │         │
- │        │<─Display────│                │           │         │
- │<Results│             │                │           │         │
- │        │             │                │           │         │
- │─Select─>│             │                │           │         │
- │Property│─Get Details─>│                │           │         │
- │        │             │─Fetch Details──>│           │         │
- │        │             │<──Place Data────│           │         │
- │        │<─Show Info──│                │           │         │
- │<Details│             │                │           │         │
- │        │             │                │           │         │
- │─Request│             │                │           │         │
- │Booking─>─Create──────>│                │           │         │
- │        │ Booking      │─Store Request──>│           │         │
- │        │             │<──Confirmation──│           │         │
- │        │             │─Notify Host────────────────>│         │
- │        │<─Pending────│                │           │<Notification│
- │<Status │             │                │           │         │
- │        │             │                │           │─Review──│
- │        │             │                │           │Request  │
- │        │             │<───────────────────────────│─Accept─>│
- │        │             │─Update Status──>│           │         │
- │        │             │<──Updated───────│           │         │
- │        │<─Approved───│                │           │         │
- │<Status │             │                │           │         │
- │        │             │                │           │         │
- │─Provide│             │                │           │         │
- │Payment─>─Process─────>│                │           │         │
- │Info    │ Payment      │─Charge Card────>│           │         │
- │        │             │<──Success───────│           │         │
- │        │             │─Record Payment─>│           │         │
- │        │             │<──Confirmation──│           │         │
- │        │<─Success────│                │           │         │
- │<Receipt│             │                │           │         │
- │        │             │─Notify All Parties─────────>│         │
- │        │             │                │           │         │
+User    Website    HBnB Backend    Payment Gateway    Host       Database
+ │         │             │                │           │             │
+ │─Search─>│             │                │           │             │
+ │         │─Get Places─>│                │           │             │
+ │         │             │─Query Places──>│           │             │
+ │         │             │<──Results──────│           │             │
+ │         │<─Display────│                │           │             │
+ │<Results │             │                │           │             │
+ │         │             │                │           │             │
+ │─Select─>│             │                │           │             │
+ │Property │Get Details─>│                │           │             │
+ │         │             │─Fetch Details─>│           │             │
+ │         │             │<──Place Data───│           │             │
+ │         │<─Show Info──│                │           │             │ 
+ │<Details │             │                │           │             │  
+ │         │             │                │           │             │ 
+ │─Request │             │                │           │             │
+ │Booking─>|─Create─────>│                │           │             │
+ │         │ Booking     │─Store Request─>│           │             │
+ │         │             │<──Confirmation─│           │             │
+ │         │             │─Notify Host───────────────>│             │
+ │         │<─Pending────│                │           │<Notification│
+ │<Status  │             │                │           │             │
+ │         │             │                │           │─Review──────│
+ │         │             │                │           │Request      │
+ │         │             │<───────────────────────────│─Accept─────>│
+ │         │             │─Update Status─>│           │             │
+ │         │             │<──Updated──────│           │             │
+ │         │<─Approved───│                │           │             │
+ │<Status  │             │                │           │             │
+ │         │             │                │           │             │
+ │─Provide │             │                │           │             │
+ │Payment─>|─Process────>│                │           │             │
+ │Info     │ Payment     │─Charge Card───>│           │             │
+ │         │             │<──Success──────│           │             │
+ │         │             │Record Payment─>│           │             │
+ │         │             │<──Confirmation─│           │             │
+ │         │<─Success────│                │           │             │
+ │<Receipt │             │                │           │             │
+ │         │             │─Notify All Parties────────>│             │
+ │         │             │                │           │             │
 ```
 
 ### Detailed Interaction Analysis
