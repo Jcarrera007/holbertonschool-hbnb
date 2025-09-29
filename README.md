@@ -1,6 +1,5 @@
 # HBnB Evolution: Your Next-Generation Vacation Rental Platform
 
-![HBnB Evolution Banner](https://i.imgur.com/tq2Yt2D.png)
 
 Welcome to **HBnB Evolution**, a modern, scalable, and feature-rich vacation rental application inspired by Airbnb. This project aims to build a robust platform from the ground up, focusing on a clean architecture and a great user experience.
 
