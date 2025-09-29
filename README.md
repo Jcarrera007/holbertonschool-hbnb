@@ -40,10 +40,6 @@ We are building a simplified version of an Airbnb-like application named **HBnB 
 
 The complete technical documentation, including UML diagrams (Package, Class, Sequence), will be developed as the first part of this project. This will ensure a solid foundation for implementation.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please refer to our contributing guidelines for more information on how to get involved.
-
 ## 📞 Contact
 
 For any inquiries, please open an issue or contact the project maintainers.
