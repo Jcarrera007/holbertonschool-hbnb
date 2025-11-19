@@ -18,13 +18,12 @@ class User(BaseModel):
         first_name (str): User's first name (max 50 chars, required)
         last_name (str): User's last name (max 50 chars, required)
         email (str): User's email address (unique, required, valid format)
-        password (str): Hashed password (required, min 6 chars)
         is_admin (bool): Administrative privileges flag (default: False)
         created_at (datetime): Creation timestamp (inherited from BaseModel)
         updated_at (datetime): Last update timestamp (inherited from BaseModel)
     """
     
-    def __init__(self, first_name, last_name, email, password, is_admin=False):
+    def __init__(self, first_name, last_name, email, is_admin=False):
         """
         Initialize a new User instance.
         
@@ -32,7 +31,6 @@ class User(BaseModel):
             first_name (str): User's first name
             last_name (str): User's last name
             email (str): User's email address
-            password (str): Plain text password (will be hashed)
             is_admin (bool, optional): Admin privileges. Defaults to False.
             
         Raises:
@@ -44,7 +42,6 @@ class User(BaseModel):
         self.first_name = self._validate_name(first_name, "First name")
         self.last_name = self._validate_name(last_name, "Last name")
         self.email = self._validate_email(email)
-        self.password = self._hash_password(password)
         self.is_admin = bool(is_admin)
     
     def _validate_name(self, name, field_name):
@@ -100,63 +97,6 @@ class User(BaseModel):
         
         return email
     
-    def _validate_password(self, password):
-        """
-        Validate a password.
-        
-        Args:
-            password (str): The password to validate
-            
-        Returns:
-            str: The validated password
-            
-        Raises:
-            ValueError: If password is invalid
-        """
-        if not password or not isinstance(password, str):
-            raise ValueError("Password is required and must be a string")
-        
-        if len(password) < 6:
-            raise ValueError("Password must be at least 6 characters long")
-        
-        return password
-    
-    def _hash_password(self, password):
-        """
-        Hash a password using bcrypt.
-        
-        Args:
-            password (str): Plain text password to hash
-            
-        Returns:
-            str: Hashed password
-            
-        Raises:
-            ValueError: If password is invalid
-        """
-        # Validate password first
-        validated_password = self._validate_password(password)
-        
-        # Use bcrypt directly
-        import bcrypt
-        
-        # Hash the password
-        hashed = bcrypt.hashpw(validated_password.encode('utf-8'), bcrypt.gensalt())
-        return hashed.decode('utf-8')
-    
-    def verify_password(self, password):
-        """
-        Verify a password against the stored hash.
-        
-        Args:
-            password (str): Plain text password to verify
-            
-        Returns:
-            bool: True if password matches, False otherwise
-        """
-        import bcrypt
-        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
-    
     def update(self, data):
         """
         Update user attributes with validation.
@@ -177,9 +117,6 @@ class User(BaseModel):
         if 'email' in data:
             data['email'] = self._validate_email(data['email'])
         
-        if 'password' in data:
-            data['password'] = self._hash_password(data['password'])
-        
         if 'is_admin' in data:
             data['is_admin'] = bool(data['is_admin'])
         
@@ -190,10 +127,8 @@ class User(BaseModel):
         """
         Convert the User object to a dictionary representation.
         
-        Note: Password is excluded from the dictionary for security reasons.
-        
         Returns:
-            dict: Dictionary containing all user attributes except password
+            dict: Dictionary containing all user attributes
         """
         return {
             'id': self.id,
