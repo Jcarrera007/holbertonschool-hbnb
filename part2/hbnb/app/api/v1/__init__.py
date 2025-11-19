@@ -1,15 +1,14 @@
-"""
-API v1 package initialization.
-
-This module sets up the Flask-RESTx API v1 namespaces.
-"""
-
+#!/usr/bin/python3
+"""Initializes API v1 namespaces and documentation."""
+from flask import Blueprint
 from flask_restx import Api
-from .users import api as users_ns
-from .amenities import api as amenities_ns
 
-# This will be used to register namespaces with the main API
-def register_namespaces(api):
-    """Register all v1 namespaces with the API instance."""
-    api.add_namespace(users_ns, path='/users')
-    api.add_namespace(amenities_ns, path='/amenities')
+from .users import api as user_ns
+from .amenities import api as amenity_ns
+
+api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
+api = Api(api_bp, title='HBnB API', version='1.0', description='HBnB API documentation')
+
+# Register namespaces
+api.add_namespace(user_ns, path='/users')
+api.add_namespace(amenity_ns, path='/amenities')
