@@ -1,5 +1,7 @@
+#!/usr/bin/python3
+
 from abc import ABC, abstractmethod
-from flask_sqlalchemy import SQLAlchemy
+from app import db
 
 class Repository(ABC):
     @abstractmethod
@@ -41,9 +43,10 @@ class InMemoryRepository(Repository):
         return list(self._storage.values())
 
     def update(self, obj_id, data):
-        obj = self.get(obj_id)
+        obj = self._storage.get(obj_id)
         if obj:
-            obj.update(data)
+            for key, value in data.items():
+                setattr(obj, key, value)
 
     def delete(self, obj_id):
         if obj_id in self._storage:
@@ -52,13 +55,11 @@ class InMemoryRepository(Repository):
     def get_by_attribute(self, attr_name, attr_value):
         return next((obj for obj in self._storage.values() if getattr(obj, attr_name) == attr_value), None)
 
-
 class SQLAlchemyRepository(Repository):
     def __init__(self, model):
         self.model = model
 
     def add(self, obj):
-        from app import db
         db.session.add(obj)
         db.session.commit()
 
@@ -69,7 +70,6 @@ class SQLAlchemyRepository(Repository):
         return self.model.query.all()
 
     def update(self, obj_id, data):
-        from app import db
         obj = self.get(obj_id)
         if obj:
             for key, value in data.items():
@@ -77,11 +77,11 @@ class SQLAlchemyRepository(Repository):
             db.session.commit()
 
     def delete(self, obj_id):
-        from app import db
         obj = self.get(obj_id)
         if obj:
             db.session.delete(obj)
             db.session.commit()
 
     def get_by_attribute(self, attr_name, attr_value):
-        return self.model.query.filter(getattr(self.model, attr_name) == attr_value).first()
+        return self.model.query.filter_by(**{attr_name: attr_value}).first()
+    

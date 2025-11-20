@@ -1,6 +1,5 @@
 flask
 flask-restx
 flask-jwt-extended
-flask-cors
 sqlalchemy
 flask-sqlalchemy

@@ -187,11 +187,13 @@ class HBnBFacade: #new class for facade
             {
                 "id": place.id,
                 "title": place.title,
+                "price": place.price,  # ✅ add this line
                 "latitude": place.latitude,
                 "longitude": place.longitude
             }
             for place in places
         ]
+
 
     def update_place(self, place_id, place_data):
         """
