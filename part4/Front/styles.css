@@ -6,7 +6,7 @@
   font-family: 'Quicksand', sans-serif;
 }
 body {
-  background: #e5e5e5; /* sand */
+  background: #F5F5F5; /* soft gray */
   color: #333333;
   line-height: 1.6;
 }
@@ -29,10 +29,10 @@ nav {
 .login-button {
   text-decoration: none;
   font-weight: 600;
-  color: #ffd166; /* sunny yellow */
+  color: #ffffff; /* white */
 }
 footer {
-  background: #007f91;
+  background: #FF9F1C;
   color: #fff;
   text-align: center;
   padding: 10px;
@@ -53,7 +53,7 @@ footer {
   display: inline-block;
   margin-top: 10px;
   padding: 5px 10px;
-  background: #ffd166; /* sunny yellow */
+  background: #ff9500; /* dark orange */
   color: #333;
   text-decoration: none;
   border-radius: 5px;
@@ -88,7 +88,7 @@ form select {
 form button {
   margin-top: 15px;
   padding: 8px 12px;
-  background: #ffd166; /* sunny yellow */
+  background: #ff9500; /* dark orange */
   border: none;
   color: #333;
   cursor: pointer;
