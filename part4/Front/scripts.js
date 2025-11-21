@@ -30,7 +30,7 @@ function displayPlaces(places) {
 
   // image URLs mapped by title
   const imagesByPlaceTitle = {
-  "Casa del Sol": "images/casadelsol.png",
+  "Casa del Sol": "images/beachhouse.png",
   "Ocean View Retreat": "images/oceanviewretreat.png",
   "Rainforest Cabin": "images/rainforestcabin.png"
 };
