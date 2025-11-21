@@ -30,7 +30,7 @@ function displayPlaces(places) {
 
   // image URLs mapped by title
   const imagesByPlaceTitle = {
-  "Casa del Sol": "images/beachhouse.png",
+  "Beach House": "images/beachhouse.png",
   "Ocean View Retreat": "images/oceanviewretreat.png",
   "Rainforest Cabin": "images/rainforestcabin.png"
 };
@@ -73,7 +73,7 @@ function displayPlaceDetails(place) {
   // Set banner image
   const banner = document.getElementById('banner-img');
   const bannerImages = {
-    "Casa del Sol": "images/casadelsol.png",
+    "Beach House": "images/beachhouse.png",
     "Ocean View Retreat": "images/oceanviewretreat.png",
     "Rainforest Cabin": "images/rainforestcabin.png"
   };
