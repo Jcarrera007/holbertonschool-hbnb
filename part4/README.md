@@ -50,13 +50,13 @@ part4/
 ### Option A — Use Part 3 backend (recommended)
 1) Start the Part 3 server:
 ```bash
-cd /home/jimmy//c27/holbertonschool-hbnb/part4/Back
+cd /home/jimmy/c27/holbertonschool-hbnb/part4/Back
 source .venv/bin/activate
 python3 run.py
 ```
 2) Serve the frontend (any static server works):
 ```bash
-cd /home/jimmy//c27/holbertonschool-hbnb/part4/Front
+cd /home/jimmy/c27/holbertonschool-hbnb/part4/Front
 python3 -m http.server 8000
 ```
 3) Open: `http://127.0.0.1:8000/index.html`
