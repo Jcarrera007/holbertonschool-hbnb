@@ -96,6 +96,36 @@ form button {
   font-weight: bold;
 }
 
+/* ---- Auth Panels Enhancements ---- */
+.auth-panels {
+  max-width: 900px;
+  margin: 30px auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.card { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.linklike {
+  background: none;
+  border: none;
+  color: #0070f3;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+.error {
+  color: #c0392b;
+  background: #fdecea;
+  border: 1px solid #f5c6cb;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+@media (max-width: 800px) {
+  .auth-panels { grid-template-columns: 1fr; }
+}
+
 /* -------------- Utility Sections -------------- */
 .places-list {
   display: flex;

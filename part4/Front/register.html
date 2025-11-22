@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>HBnB – Login</title>
+  <title>HBnB – Register</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="images/icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
@@ -18,19 +18,24 @@
   </header>
 
   <main>
-    <form id="login-form">
-      <h2>Login</h2>
+    <form id="register-form">
+      <h2>Create Account</h2>
+
+      <label for="first_name">First name:</label>
+      <input type="text" id="first_name" name="first_name" required>
+
+      <label for="last_name">Last name:</label>
+      <input type="text" id="last_name" name="last_name" required>
+
       <label for="email">Email:</label>
       <input type="email" id="email" name="email" required>
 
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" required>
 
-      <button type="submit">Login</button>
-      <p class="hint">Don’t have an account?
-        <a href="register.html" class="linklike">Create one</a>
-      </p>
-      <p id="login-error" class="error" aria-live="polite" style="display:none;"></p>
+      <button type="submit">Register</button>
+      <p class="hint">Already have an account? <a class="linklike" href="login.html">Back to login</a></p>
+      <p id="register-error" class="error" aria-live="polite" style="display:none;"></p>
     </form>
   </main>
 

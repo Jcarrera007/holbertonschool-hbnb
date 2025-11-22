@@ -48,7 +48,7 @@ part4/
 ## 🚀 Quick Start
 
 ### Option A — Use Part 3 backend (recommended)
-1) Start the Part 3 server:
+1) Start the Part 4 server:
 ```bash
 cd /home/jimmy/c27/holbertonschool-hbnb/part4/Back
 source .venv/bin/activate

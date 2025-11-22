@@ -23,7 +23,9 @@ class HBnBFacade: #new class for facade
 
         if self.get_user_by_email(user.email):
             raise ValueError("Email already registered")
-
+        # Hash password if provided in payload
+        if 'password' in data and data['password']:
+            user.hash_password(data['password'])
         self.user_repo.add(user)
         return user
 

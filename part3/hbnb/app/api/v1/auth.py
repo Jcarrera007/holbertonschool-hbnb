@@ -42,3 +42,26 @@ class ProtectedResource(Resource):
         """A protected endpoint that requires a valid JWT token"""
         current_user = get_jwt_identity()
         return {'message': f'Hello, user {current_user["id"]}'}, 200
+    
+    register_model = api.model('Register', {
+    'first_name': fields.String(required=True),
+    'last_name': fields.String(required=True),
+    'email': fields.String(required=True),
+    'password': fields.String(required=True)
+})
+
+@api.route('/register')
+class Register(Resource):
+    @api.expect(register_model)
+    def post(self):
+        """Register a new user"""
+        data = api.payload
+
+        try:
+            user = facade.create_user(data)
+            return {
+                'id': str(user.id),
+                'email': user.email
+            }, 201
+        except ValueError as e:
+            return {'error': str(e)}, 400

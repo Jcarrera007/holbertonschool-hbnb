@@ -1,5 +1,8 @@
 // ===== scripts.js =====
 
+// Central API base for easy switching
+const API_BASE = 'http://127.0.0.1:5000/api/v1';
+
 // 1) Utility: read a cookie
 function getCookie(name) {
   const pairs = document.cookie.split(';').map(c => c.trim().split('='));
@@ -9,12 +12,29 @@ function getCookie(name) {
   return null;
 }
 
+function setCookie(name, value, days = 1) {
+  const maxAge = days * 24 * 60 * 60;
+  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+
+async function loginUser(email, password) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || json.message || 'Login failed');
+  setCookie('token', json.access_token, 1);
+  return json;
+}
+
 // 2) FETCHERS & RENDERS
 
 // Fetch and render the list of places (index.html)
 async function fetchPlaces() {
   const token = getCookie('token');
-  const res = await fetch('http://127.0.0.1:5000/api/v1/places/', {
+  const res = await fetch(`${API_BASE}/places/`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   if (!res.ok) throw new Error('Failed to fetch places');
@@ -57,7 +77,7 @@ function displayPlaces(places) {
 // Fetch and render a single place’s details (place.html)
 async function fetchPlaceDetails(placeId) {
   const token = getCookie('token');
-  const res = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`, {
+  const res = await fetch(`${API_BASE}/places/${placeId}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   if (!res.ok) throw new Error('Failed to fetch place details');
@@ -99,7 +119,7 @@ function displayPlaceDetails(place) {
 async function fetchReviews(placeId) {
   const token = getCookie('token');
   const res = await fetch(
-    `http://127.0.0.1:5000/api/v1/reviews/place/${placeId}`, {
+    `${API_BASE}/reviews/place/${placeId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     }
   );
@@ -124,7 +144,7 @@ function displayReviews(reviews) {
 async function submitReview(placeId, text, rating) {
   const token = getCookie('token');
   const res = await fetch(
-    `http://127.0.0.1:5000/api/v1/reviews/place/${placeId}/new`, {
+    `${API_BASE}/reviews/place/${placeId}/new`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -138,31 +158,70 @@ async function submitReview(placeId, text, rating) {
 
 // 3) DOMContentLoaded: wire up per‑page logic
 
-document.addEventListener('DOMContentLoaded', () => {
+function initHBnB() {
   const token = getCookie('token');
   const loginLink = document.getElementById('login-link');
   if (loginLink) loginLink.style.display = token ? 'none' : 'inline-block';
 
   // LOGIN PAGE
   const loginForm = document.getElementById('login-form');
-  if (loginForm) {
+  if (loginForm && window.location.pathname.endsWith('login.html')) {
     loginForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const email = loginForm.email.value;
+      const email = loginForm.email.value.trim();
       const pass  = loginForm.password.value;
-      const res = await fetch('http://127.0.0.1:5000/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ email, password: pass })
-      });
-      const json = await res.json();
-      if (res.ok) {
-        document.cookie = `token=${json.access_token}; path=/; max-age=86400`;
+      const errorEl = document.getElementById('login-error');
+      if (errorEl) errorEl.style.display = 'none';
+      try {
+        await loginUser(email, pass);
         window.location.href = 'index.html';
-      } else {
-        alert(json.error || json.message || 'Login failed');
+      } catch (err) {
+        if (errorEl) {
+          errorEl.textContent = err.message;
+          errorEl.style.display = 'block';
+        } else {
+          alert(err.message);
+        }
       }
     });
+
+    return;
+  }
+
+  // REGISTER PAGE
+  if (window.location.pathname.endsWith('register.html')) {
+    const regForm = document.getElementById('register-form');
+    if (regForm) {
+      regForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const first_name = regForm.first_name.value.trim();
+        const last_name  = regForm.last_name.value.trim();
+        const email      = regForm.email.value.trim();
+        const password   = regForm.password.value;
+        const errorEl    = document.getElementById('register-error');
+        if (errorEl) errorEl.style.display = 'none';
+        try {
+          const res = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ first_name, last_name, email, password })
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error || 'Registration failed');
+
+          // Auto-login after register
+          await loginUser(email, password);
+          window.location.href = 'index.html';
+        } catch (err) {
+          if (errorEl) {
+            errorEl.textContent = err.message;
+            errorEl.style.display = 'block';
+          } else {
+            alert(err.message);
+          }
+        }
+      });
+    }
     return;
   }
 
@@ -215,4 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHBnB);
+} else {
+  initHBnB();
+}
