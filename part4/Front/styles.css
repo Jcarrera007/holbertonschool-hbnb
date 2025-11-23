@@ -109,7 +109,23 @@ footer {
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-/* amenity icon styling removed (reverted to text list) */
+/* Amenities icons */
+.amenities { margin-top: 8px; }
+.amenities-label { font-weight: 700; }
+.amenities-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.amenity-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  opacity: 0.9;
+  transition: transform .18s cubic-bezier(.2,.8,.2,1), opacity .2s;
+}
+.amenity-icon:hover { transform: translateY(-2px) scale(1.05); opacity: 1; }
 .details-button {
   display: inline-block;
   margin-top: 10px;

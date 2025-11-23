@@ -68,10 +68,21 @@ function displayPlaces(places) {
 
     const imageUrl = imagesByPlaceTitle[place.title] || 'images/default.png';
 
+    const amenitiesHTML = `
+      <div class="amenities">
+        <span class="amenities-label">Amenities:</span>
+        <div class="amenities-row">
+          <img class="amenity-icon" src="images/icon_bed.png" alt="Bed" title="Bed">
+          <img class="amenity-icon" src="images/icon_wifi.png" alt="Wi‑Fi" title="Wi‑Fi">
+          <img class="amenity-icon" src="images/icon_bath.png" alt="Bath" title="Bath">
+        </div>
+      </div>`;
+
     card.innerHTML = `
       <img src="${imageUrl}" alt="${place.title}" class="place-img">
       <h3>${place.title}</h3>
       <p>Price: $${place.price}</p>
+      ${amenitiesHTML}
       <a class="details-button" href="place.html?id=${place.id}">View Details</a>
     `;
     container.appendChild(card);
@@ -104,11 +115,21 @@ function displayPlaceDetails(place) {
   
   banner.src = bannerImages[place.title] || "images/default.png";
   banner.alt = place.title;
+  const amenitiesHTML = `
+    <div class="amenities">
+      <span class="amenities-label">Amenities:</span>
+      <div class="amenities-row">
+        <img class="amenity-icon" src="images/icon_bed.png" alt="Bed" title="Bed">
+        <img class="amenity-icon" src="images/icon_wifi.png" alt="Wi‑Fi" title="Wi‑Fi">
+        <img class="amenity-icon" src="images/icon_bath.png" alt="Bath" title="Bath">
+      </div>
+    </div>`;
+
   container.innerHTML = `
     <h2>${place.title}</h2>
     <p>${place.description}</p>
     <p><strong>Price:</strong> $${place.price}</p>
-    <p><strong>Amenities:</strong> ${place.amenities.map(a => a.name).join(', ')}</p>
+    ${amenitiesHTML}
   `;
   const token = getCookie('token');
   const addSection = document.getElementById('add-review');
