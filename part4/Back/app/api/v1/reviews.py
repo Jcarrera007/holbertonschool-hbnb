@@ -23,6 +23,7 @@ review_output = reviews_ns.model('ReviewOutput', {
     'text': fields.String,
     'rating': fields.Integer,
     'user_id': fields.String,
+    'user_name': fields.String(description='Reviewer full name'),
     'place_id': fields.String
 })
 
@@ -59,7 +60,11 @@ class ReviewList(Resource):
             return {"error": "You have already reviewed this place."}, 400
 
         # Step 4: Create the review
-        return facade.create_review(data), 201
+        try:
+            created = facade.create_review(data)
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        return created, 201
 
 
 
@@ -166,8 +171,10 @@ class ReviewToPlace(Resource):
         # Set the place_id now that it's validated
         data['place_id'] = place_id
         print("DEBUG: review submission data:", data)
-        print("DEBUG: current_user_id =", current_user_id)
-        print("DEBUG: place =", place)
-        return facade.create_review(data), 201
+        try:
+            created = facade.create_review(data)
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        return created, 201
 
 api = reviews_ns

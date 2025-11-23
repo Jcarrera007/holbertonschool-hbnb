@@ -29,7 +29,7 @@ nav {
 }
 .logo-stack { display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
 .nav-under { display:flex; gap:12px; }
-.home-button, .logout-button {
+.home-button, .logout-button, .login-button {
   background:#fff;
   border:1px solid #ffd166;
   padding:6px 14px;
@@ -44,19 +44,19 @@ nav {
   position:relative;
 }
 /* Enhanced pop style similar to details-button */
-.home-button.pop-btn {
+.home-button.pop-btn, .login-button.pop-btn, .logout-button.pop-btn {
   background:#ff9500;
   border:1px solid #e68400;
   color:#333;
   box-shadow:0 4px 10px rgba(0,0,0,0.18);
   transform:translateY(-2px);
 }
-.home-button.pop-btn:hover {
+.home-button.pop-btn:hover, .login-button.pop-btn:hover, .logout-button.pop-btn:hover {
   background:#ffa733;
   transform:translateY(-6px) scale(1.05);
   box-shadow:0 10px 20px rgba(0,0,0,0.22);
 }
-.home-button.pop-btn:active {
+.home-button.pop-btn:active, .login-button.pop-btn:active, .logout-button.pop-btn:active {
   background:#ff9500;
   transform:translateY(-1px) scale(0.98);
   box-shadow:0 3px 8px rgba(0,0,0,0.2);
@@ -86,15 +86,11 @@ nav {
   box-shadow:0 3px 8px rgba(0,0,0,0.2);
 }
 /* Optional pulse on focus for accessibility */
-.home-button:focus-visible, .logout-button:focus-visible {
+.home-button:focus-visible, .logout-button:focus-visible, .login-button:focus-visible {
   outline:2px solid #ff9500;
   outline-offset:2px;
 }
-.login-button {
-  text-decoration: none;
-  font-weight: 600;
-  color: #ffffff; /* white */
-}
+.login-button { text-decoration:none; font-weight:600; }
 footer {
   background: #FF9F1C;
   color: #fff;
@@ -218,6 +214,13 @@ form button {
   object-fit: cover;
   border-bottom: 3px solid #ffd166;
   margin-bottom: 20px;
+}
+
+/* Page title styling */
+.page-title {
+  text-align: center;
+  font-weight: 700;
+  margin: 10px 0 8px;
 }
 
 .place-card img.place-img {

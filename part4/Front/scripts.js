@@ -135,12 +135,23 @@ function displayReviews(reviews) {
   const container = document.getElementById('reviews');
   if (!container) return;
   container.innerHTML = reviews.length
-    ? reviews.map(r => `
+    ? reviews.map(r => {
+        const name = (r.user_name && String(r.user_name).trim())
+          ? String(r.user_name).trim()
+          : null;
+        let by;
+        if (name) {
+          by = `"${name}"`;
+        } else {
+          const rate = Number(r.rating);
+          by = rate <= 3 ? 'Unsatisfied customer' : 'Satisfied customer';
+        }
+        return `
         <div class="review-card">
           <p>${r.text}</p>
-          <p><em>By ${r.user_id} — Rating: ${r.rating}/5</em></p>
-        </div>
-      `).join('')
+          <p><em>By ${by} — Rating: ${r.rating}/5</em></p>
+        </div>`;
+      }).join('')
     : '<p>No reviews yet.</p>';
 }
 
@@ -154,7 +165,7 @@ async function submitReview(placeId, text, rating) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ text, rating: Number(rating), place_id: placeId })
+      body: JSON.stringify({ text, rating: Number(rating) })
     }
   );
   return res;
@@ -287,8 +298,14 @@ function initHBnB() {
             location.href = 'login.html';
             return;
           }
-          const j = await res.json().catch(() => ({}));
-          alert(j.error || j.message || `Failed to submit (HTTP ${res.status})`);
+          const bodyText = await res.text().catch(() => '');
+          let msg = `Failed to submit (HTTP ${res.status})`;
+          try {
+            const j = JSON.parse(bodyText || '{}');
+            msg = j.error || j.message || msg;
+          } catch (_) {}
+          console.error('Review submit failed:', res.status, bodyText);
+          alert(msg);
         }
       });
     }

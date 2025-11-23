@@ -251,6 +251,9 @@ class HBnBFacade: #new class for facade
         if not text or not isinstance(text, str):
             raise ValueError("Review text must be a non-empty string")
 
+        # Coerce numeric strings to int
+        if isinstance(rating, str):
+            rating = int(rating) if rating.isdigit() else rating
         if not isinstance(rating, int) or not (1 <= rating <= 5):
             raise ValueError("Rating must be an integer between 1 and 5")
 
@@ -263,7 +266,7 @@ class HBnBFacade: #new class for facade
             raise ValueError("Place not found")
 
         # Create review
-        review = Review(text=text, rating=rating, user=user, place=place)
+        review = Review(text=text.strip(), rating=rating, user=user, place=place)
         self.review_repo.add(review)
         return review
 
@@ -276,12 +279,16 @@ class HBnBFacade: #new class for facade
         if not review:
             return None
 
+        # Fetch user for display name
+        user = self.user_repo.get(review.user_id)
+        user_name = f"{user.first_name} {user.last_name}" if user else ""
         return {
             "id": review.id,
             "text": review.text,
             "rating": review.rating,
-            "user_id": review.user.id,
-            "place_id": review.place.id
+            "user_id": review.user_id,
+            "user_name": user_name,
+            "place_id": review.place_id
         }
 
     def get_all_reviews(self):
@@ -289,16 +296,19 @@ class HBnBFacade: #new class for facade
         Returns a list of all reviews with basic information.
         """
         reviews = self.review_repo.get_all()
-        return [
-            {
+        out = []
+        for review in reviews:
+            user = self.user_repo.get(review.user_id)
+            user_name = f"{user.first_name} {user.last_name}" if user else ""
+            out.append({
                 "id": review.id,
                 "text": review.text,
                 "rating": review.rating,
-                "user_id": review.user.id,
-                "place_id": review.place.id
-            }
-            for review in reviews
-        ]
+                "user_id": review.user_id,
+                "user_name": user_name,
+                "place_id": review.place_id
+            })
+        return out
 
     def get_review_by_user_and_place(self, user_id, place_id):
         """
@@ -307,7 +317,7 @@ class HBnBFacade: #new class for facade
         """
         reviews = self.review_repo.get_all()
         for review in reviews:
-            if review.user.id == user_id and review.place.id == place_id:
+            if review.user_id == user_id and review.place_id == place_id:
                 return review
         return None
 
@@ -362,12 +372,17 @@ class HBnBFacade: #new class for facade
             return None  # Place not found
 
         reviews = self.review_repo.get_all()
-        return [
-            {
+        out = []
+        for review in reviews:
+            if review.place_id != place_id:
+                continue
+            user = self.user_repo.get(review.user_id)
+            user_name = f"{user.first_name} {user.last_name}" if user else ""
+            out.append({
                 "id": review.id,
                 "text": review.text,
                 "rating": review.rating,
-                "user_id": review.user.id
-            }
-            for review in reviews if review.place.id == place_id
-        ]
+                "user_id": review.user_id,
+                "user_name": user_name
+            })
+        return out
