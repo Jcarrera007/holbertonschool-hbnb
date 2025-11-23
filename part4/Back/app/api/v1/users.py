@@ -2,7 +2,7 @@
 
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 api = Namespace('users', description='User operations')
 
@@ -23,8 +23,9 @@ class UserList(Resource):
     def post(self):
         """Register a new user"""
         user_data = api.payload
-        current_user = get_jwt_identity()
-        if not current_user.get("is_admin", False):
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+        if not claims.get("is_admin", False):
             return {"error": "Admin privileges required"}, 403
 
         if facade.get_user_by_email(user_data['email']):
@@ -73,14 +74,15 @@ class UserResource(Resource):
     @jwt_required()
     def put(self, user_id):
         """Update a user by ID"""
-        current_user = get_jwt_identity()
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
         
         user_data = api.payload
-        is_admin = current_user.get("is_admin", False)
+        is_admin = claims.get("is_admin", False)
 
         # If not admin, enforce self-only access and no email/password update
         if not is_admin:
-            if current_user["id"] != user_id:
+            if current_user_id != user_id:
                 return {"error": "Unauthorized action"}, 403
             if 'email' in user_data or 'password' in user_data:
                 return {"error": "You cannot modify email or password."}, 400

@@ -27,11 +27,11 @@ class Login(Resource):
         if not user or not user.verify_password(credentials['password']):
             return {'error': 'Invalid credentials'}, 401
 
-        #create JWT token with userid and is admin
-        access_token = create_access_token(identity={
-            'id': str(user.id),
-            'is_admin': user.is_admin
-        })
+        # create JWT token with string subject (user id) and is_admin as additional claim
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={"is_admin": user.is_admin}
+        )
 
         return {'access_token': access_token}, 200
 
@@ -40,8 +40,8 @@ class ProtectedResource(Resource):
     @jwt_required()
     def get(self):
         """A protected endpoint that requires a valid JWT token"""
-        current_user = get_jwt_identity()
-        return {'message': f'Hello, user {current_user["id"]}'}, 200
+        current_user_id = get_jwt_identity()
+        return {'message': f'Hello, user {current_user_id}'}, 200
 
 register_model = api.model('Register', {
     'first_name': fields.String(required=True),

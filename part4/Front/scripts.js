@@ -1,206 +1,302 @@
-(function () {
-  "use strict";
+// ===== scripts.js =====
 
-  // Mock data so pages render without a backend
-  const AppData = {
-    places: [
-      {
-        id: "p1",
-        name: "Cozy Loft",
-        price_per_night: 120,
-        host: "Alice",
-        description: "A sunny loft in the city center, close to cafes and museums.",
-        amenities: ["Wi‑Fi", "Kitchen", "Air conditioning"],
-        reviews: [
-          { user: "Bob", rating: 5, comment: "Fantastic stay, very clean!" },
-          { user: "Cara", rating: 4, comment: "Great location and comfy bed." }
-        ]
-      },
-      {
-        id: "p2",
-        name: "Beach Bungalow",
-        price_per_night: 180,
-        host: "Diego",
-        description: "Steps from the beach. Hear the waves and enjoy sunsets.",
-        amenities: ["Wi‑Fi", "Free parking", "Washer"],
-        reviews: []
-      }
-    ]
-  };
+// Central API base for easy switching
+const API_BASE = 'http://127.0.0.1:5000/api/v1';
 
-  // Auth helpers (client-side only, demo)
-  function isLoggedIn() {
-    return Boolean(localStorage.getItem("token"));
+// 1) Utility: read a cookie
+function getCookie(name) {
+  const pairs = document.cookie.split(';').map(c => c.trim().split('='));
+  for (const [key, val] of pairs) {
+    if (key === name) return val;
   }
-  function currentUser() {
-    return localStorage.getItem("user") || "";
-  }
-  function setAuthUI() {
-    const link = document.getElementById("login-link");
-    if (!link) return;
-    if (isLoggedIn()) {
-      link.textContent = "Logout";
-      link.href = "#";
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        location.reload();
-      }, { once: true });
-    } else {
-      link.textContent = "Login";
-      link.href = "login.html";
-    }
-  }
+  return null;
+}
 
-  // Index page: render list of places
-  function renderPlaces() {
-    const container = document.getElementById("places-list");
-    if (!container) return;
-    container.innerHTML = "";
-    AppData.places.forEach((p) => {
-      const card = document.createElement("article");
-      card.className = "place-card";
-      card.innerHTML = `
-        <h3>${escapeHtml(p.name)}</h3>
-        <p class="muted">$${Number(p.price_per_night).toFixed(0)} per night</p>
-        <a class="details-button" href="place.html?id=${encodeURIComponent(p.id)}">View Details</a>
-      `;
-      container.appendChild(card);
-    });
-  }
+function deleteCookie(name) {
+  document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+}
 
-  // Place details page
-  function renderPlaceDetails() {
-    const details = document.getElementById("place-details");
-    if (!details) return;
+function setCookie(name, value, days = 1) {
+  const maxAge = days * 24 * 60 * 60;
+  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
 
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-    const place = AppData.places.find((p) => p.id === id) || AppData.places[0];
-
-    const title = document.getElementById("place-title");
-    const info = document.getElementById("place-info");
-    const amenitiesList = document.getElementById("amenities-list");
-    const reviewsList = document.getElementById("reviews-list");
-    const addBtn = document.getElementById("add-review-button");
-    const loginPrompt = document.getElementById("login-prompt");
-
-    title.textContent = place.name;
-    info.innerHTML = `
-      <p><strong>Host:</strong> ${escapeHtml(place.host)}</p>
-      <p><strong>Price:</strong> $${Number(place.price_per_night).toFixed(0)} per night</p>
-      <p><strong>Description:</strong> ${escapeHtml(place.description)}</p>
-    `;
-
-    amenitiesList.innerHTML = "";
-    place.amenities.forEach((a) => {
-      const li = document.createElement("li");
-      li.textContent = a;
-      amenitiesList.appendChild(li);
-    });
-
-    reviewsList.innerHTML = "";
-    if (place.reviews.length === 0) {
-      const p = document.createElement("p");
-      p.className = "muted";
-      p.textContent = "No reviews yet.";
-      reviewsList.appendChild(p);
-    } else {
-      place.reviews.forEach((r) => {
-        const div = document.createElement("div");
-        div.className = "review-card";
-        div.innerHTML = `
-          <p><strong>${escapeHtml(r.user)}</strong> — Rating: ${Number(r.rating)}/5</p>
-          <p>${escapeHtml(r.comment)}</p>
-        `;
-        reviewsList.appendChild(div);
-      });
-    }
-
-    if (isLoggedIn()) {
-      addBtn.hidden = false;
-      addBtn.href = `add_review.html?id=${encodeURIComponent(place.id)}`;
-      loginPrompt.hidden = true;
-    } else {
-      addBtn.hidden = true;
-      loginPrompt.hidden = false;
-    }
-  }
-
-  // Login page
-  function wireLoginForm() {
-    const form = document.getElementById("login-form");
-    if (!form) return;
-    const error = document.getElementById("login-error");
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const email = (document.getElementById("email").value || "").trim();
-      const password = (document.getElementById("password").value || "").trim();
-      if (email.length && password.length) {
-        // Demo: accept any non-empty credentials
-        localStorage.setItem("token", "demo-token");
-        localStorage.setItem("user", email);
-        const params = new URLSearchParams(location.search);
-        const redirect = params.get("redirect");
-        location.href = redirect || "index.html";
-      } else {
-        error.hidden = false;
-      }
-    });
-  }
-
-  // Add Review page
-  function wireAddReviewForm() {
-    const form = document.getElementById("add-review-form");
-    const guardMsg = document.getElementById("auth-guard-msg");
-    if (!form) return;
-
-    if (!isLoggedIn()) {
-      guardMsg.hidden = false;
-      // Redirect to login with return
-      const returnTo = `add_review.html${location.search || ""}`;
-      setTimeout(() => {
-        location.href = `login.html?redirect=${encodeURIComponent(returnTo)}`;
-      }, 1200);
-      return;
-    }
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const params = new URLSearchParams(location.search);
-      const id = params.get("id") || "p1";
-      const rating = Number(document.getElementById("rating").value);
-      const comment = (document.getElementById("comment").value || "").trim();
-      if (!rating || !comment) return;
-
-      const place = AppData.places.find((p) => p.id === id) || AppData.places[0];
-      place.reviews.push({
-        user: currentUser() || "You",
-        rating,
-        comment
-      });
-
-      // Navigate back to details to see the new review (session-only)
-      location.href = `place.html?id=${encodeURIComponent(id)}`;
-    });
-  }
-
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  // Init on load
-  document.addEventListener("DOMContentLoaded", function () {
-    setAuthUI();
-    renderPlaces();
-    renderPlaceDetails();
-    wireLoginForm();
-    wireAddReviewForm();
+async function loginUser(email, password) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
   });
-})();
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || json.message || 'Login failed');
+  setCookie('token', json.access_token, 1);
+  return json;
+}
+
+// 2) FETCHERS & RENDERS
+
+// Fetch and render the list of places (index.html)
+async function fetchPlaces() {
+  const token = getCookie('token');
+  const res = await fetch(`${API_BASE}/places/`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to fetch places');
+  const places = await res.json();
+  displayPlaces(places);
+}
+
+// Render place cards into #places-list
+function displayPlaces(places) {
+  const container = document.getElementById('places-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // image URLs mapped by title
+  const imagesByPlaceTitle = {
+  "Beach House": "images/beachhouse.png",
+  "Ocean View Retreat": "images/oceanview.png",
+  "Rainforest Cabin": "images/rainforestcabin.png"
+};
+
+
+  places.forEach(place => {
+    const card = document.createElement('div');
+    card.className = 'place-card';
+    // set price for filtering
+    card.dataset.price = place.price;
+
+    const imageUrl = imagesByPlaceTitle[place.title] || 'images/default.png';
+
+    card.innerHTML = `
+      <img src="${imageUrl}" alt="${place.title}" class="place-img">
+      <h3>${place.title}</h3>
+      <p>Price: $${place.price}</p>
+      <a class="details-button" href="place.html?id=${place.id}">View Details</a>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// Fetch and render a single place’s details (place.html)
+async function fetchPlaceDetails(placeId) {
+  const token = getCookie('token');
+  const res = await fetch(`${API_BASE}/places/${placeId}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to fetch place details');
+  const place = await res.json();
+  displayPlaceDetails(place);
+}
+
+// Render detailed info + add-review link + reviews
+function displayPlaceDetails(place) {
+  const container = document.getElementById('place-details');
+  if (!container) return;
+
+  // Set banner image
+  const banner = document.getElementById('banner-img');
+  const bannerImages = {
+    "Beach House": "images/beachhouse.png",
+    "Ocean View Retreat": "images/oceanview.png",
+    "Rainforest Cabin": "images/rainforestcabin.png"
+  };
+  
+  banner.src = bannerImages[place.title] || "images/default.png";
+  banner.alt = place.title;
+  container.innerHTML = `
+    <h2>${place.title}</h2>
+    <p>${place.description}</p>
+    <p><strong>Price:</strong> $${place.price}</p>
+    <p><strong>Amenities:</strong> ${place.amenities.map(a => a.name).join(', ')}</p>
+  `;
+  const token = getCookie('token');
+  const addSection = document.getElementById('add-review');
+  if (addSection) {
+    addSection.style.display = token ? 'block' : 'none';
+    if (token) addSection.querySelector('a').href = `add_review.html?id=${place.id}`;
+  }
+  fetchReviews(place.id);
+}
+
+// Fetch & render reviews for a place
+async function fetchReviews(placeId) {
+  const token = getCookie('token');
+  const res = await fetch(
+    `${API_BASE}/reviews/place/${placeId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+  if (!res.ok) throw new Error('Failed to fetch reviews');
+  const reviews = await res.json();
+  displayReviews(reviews);
+}
+function displayReviews(reviews) {
+  const container = document.getElementById('reviews');
+  if (!container) return;
+  container.innerHTML = reviews.length
+    ? reviews.map(r => `
+        <div class="review-card">
+          <p>${r.text}</p>
+          <p><em>By ${r.user_id} — Rating: ${r.rating}/5</em></p>
+        </div>
+      `).join('')
+    : '<p>No reviews yet.</p>';
+}
+
+// Submit a new review (add_review.html)
+async function submitReview(placeId, text, rating) {
+  const token = getCookie('token');
+  const res = await fetch(
+    `${API_BASE}/reviews/place/${placeId}/new`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ text, rating: Number(rating), place_id: placeId })
+    }
+  );
+  return res;
+}
+
+// 3) DOMContentLoaded: wire up per‑page logic
+
+function initHBnB() {
+  const token = getCookie('token');
+  const loginLink = document.getElementById('login-link');
+  const logoutBtn = document.getElementById('logout-button');
+  if (loginLink) loginLink.style.display = token ? 'none' : 'inline-block';
+  if (logoutBtn) {
+    logoutBtn.style.display = token ? 'inline-block' : 'none';
+    logoutBtn.onclick = () => {
+      deleteCookie('token');
+      // simple feedback
+      alert('Logged out');
+      window.location.href = 'login.html';
+    };
+  }
+
+  // LOGIN PAGE
+  const loginForm = document.getElementById('login-form');
+  if (loginForm && window.location.pathname.endsWith('login.html')) {
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = loginForm.email.value.trim();
+      const pass  = loginForm.password.value;
+      const errorEl = document.getElementById('login-error');
+      if (errorEl) errorEl.style.display = 'none';
+      try {
+        await loginUser(email, pass);
+        window.location.href = 'index.html';
+      } catch (err) {
+        if (errorEl) {
+          errorEl.textContent = err.message;
+          errorEl.style.display = 'block';
+        } else {
+          alert(err.message);
+        }
+      }
+    });
+
+    return;
+  }
+
+  // REGISTER PAGE
+  if (window.location.pathname.endsWith('register.html')) {
+    const regForm = document.getElementById('register-form');
+    if (regForm) {
+      regForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const first_name = regForm.first_name.value.trim();
+        const last_name  = regForm.last_name.value.trim();
+        const email      = regForm.email.value.trim();
+        const password   = regForm.password.value;
+        const errorEl    = document.getElementById('register-error');
+        if (errorEl) errorEl.style.display = 'none';
+        try {
+          const res = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ first_name, last_name, email, password })
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error || 'Registration failed');
+
+          // Auto-login after register
+          await loginUser(email, password);
+          window.location.href = 'index.html';
+        } catch (err) {
+          if (errorEl) {
+            errorEl.textContent = err.message;
+            errorEl.style.display = 'block';
+          } else {
+            alert(err.message);
+          }
+        }
+      });
+    }
+    return;
+  }
+
+  // INDEX PAGE
+  if (window.location.pathname.endsWith('index.html')) {
+    const filter = document.getElementById('price-filter');
+    if (filter) {
+      filter.addEventListener('change', () => {
+        const max = filter.value === 'all' ? Infinity : Number(filter.value);
+        document.querySelectorAll('.place-card').forEach(c => {
+          c.style.display = Number(c.dataset.price) <= max ? '' : 'none';
+        });
+      });
+    }
+    fetchPlaces().catch(e => console.error(e));
+    return;
+  }
+
+  // PLACE DETAILS
+  if (window.location.pathname.endsWith('place.html')) {
+    const id = new URLSearchParams(location.search).get('id');
+    if (!token) {
+      const add = document.getElementById('add-review');
+      if (add) add.style.display = 'none';
+    }
+    if (id) fetchPlaceDetails(id).catch(e => console.error(e));
+    return;
+  }
+
+  // ADD REVIEW
+  if (window.location.pathname.endsWith('add_review.html')) {
+    if (!token) return void (window.location.href = 'index.html');
+    const id = new URLSearchParams(location.search).get('id');
+    const form = document.getElementById('review-form');
+    if (form) {
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const text   = form.review.value.trim();
+        const rating = form.rating.value;
+        console.log('🔍 Submitting Review', { id, text, rating });
+
+        const res = await submitReview(id, text, rating);
+        if (res.ok) {
+          alert('Review posted');
+          location.href = `place.html?id=${id}`;
+        } else {
+          if (res.status === 401) {
+            alert('Your session expired. Please log in again.');
+            location.href = 'login.html';
+            return;
+          }
+          const j = await res.json().catch(() => ({}));
+          alert(j.error || j.message || `Failed to submit (HTTP ${res.status})`);
+        }
+      });
+    }
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHBnB);
+} else {
+  initHBnB();
+}

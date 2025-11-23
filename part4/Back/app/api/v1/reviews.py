@@ -4,7 +4,7 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 
 # Define the namespace for reviews
@@ -40,9 +40,9 @@ class ReviewList(Resource):
     @jwt_required()
     def post(self):
         """Create a new review"""
-        current_user = get_jwt_identity()
+        current_user_id = get_jwt_identity()
         data = request.get_json()
-        data['user_id'] = current_user['id']
+        data['user_id'] = current_user_id
 
         # Step 1: Get the place
         place = facade.get_place(data['place_id'])
@@ -50,11 +50,11 @@ class ReviewList(Resource):
             return {"error": "Place not found"}, 404
 
         # Step 2: Check ownership
-        if place.owner.id == current_user["id"]:
+        if place.owner.id == current_user_id:
             return {"error": "You cannot review your own place."}, 400
 
         # Step 3: Check for existing review by this user for this place
-        existing_review = facade.get_review_by_user_and_place(current_user["id"], data['place_id'])
+        existing_review = facade.get_review_by_user_and_place(current_user_id, data['place_id'])
         if existing_review:
             return {"error": "You have already reviewed this place."}, 400
 
@@ -79,12 +79,12 @@ class ReviewResource(Resource):
     @jwt_required()
     def put(self, review_id):
         """Update a review"""
-        current_user = get_jwt_identity()
+        current_user_id = get_jwt_identity()
         review = facade.get_review(review_id)
         if not review:
             return {"error": "Review not found"}, 404
 
-        if review["user_id"] != current_user["id"]:
+        if review["user_id"] != current_user_id:
             return {"error": "Unauthorized action"}, 403
         
         data = request.get_json()
@@ -96,9 +96,10 @@ class ReviewResource(Resource):
     @jwt_required()
     def delete(self, review_id):
         """Delete a review"""
-        current_user = get_jwt_identity()
-        user_id = current_user["id"]
-        is_admin = current_user.get("is_admin", False)
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+        user_id = current_user_id
+        is_admin = claims.get("is_admin", False)
 
         review = facade.get_review(review_id)
 
@@ -145,27 +146,27 @@ class ReviewToPlace(Resource):
     @jwt_required()
     def post(self, place_id):
         """Create a review for a specific place"""
-        current_user = get_jwt_identity()
+        current_user_id = get_jwt_identity()
         data = request.get_json()
-        data['user_id'] = current_user["id"]
+        data['user_id'] = current_user_id
 
         # Get place and check ownership
         place = facade.place_repo.get(place_id)  # returns Place model
         if not place:
             return {"error": "Place not found"}, 404
 
-        if place.owner.id == current_user["id"]:
+        if place.owner.id == current_user_id:
             return {"error": "You cannot review your own place."}, 400
 
         # Check for duplicates
-        existing_review = facade.get_review_by_user_and_place(current_user["id"], place_id)
+        existing_review = facade.get_review_by_user_and_place(current_user_id, place_id)
         if existing_review:
             return {"error": "You have already reviewed this place."}, 400
 
         # Set the place_id now that it's validated
         data['place_id'] = place_id
         print("DEBUG: review submission data:", data)
-        print("DEBUG: current_user =", current_user)
+        print("DEBUG: current_user_id =", current_user_id)
         print("DEBUG: place =", place)
         return facade.create_review(data), 201
 

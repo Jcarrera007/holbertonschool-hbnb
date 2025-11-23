@@ -21,10 +21,74 @@ nav {
   align-items: center;
   justify-content: space-between;
 }
+.nav-right { display:flex; align-items:center; gap:12px; }
 .logo {
   height: 100px;
   width: auto;
   object-fit: contain;
+}
+.logo-stack { display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+.nav-under { display:flex; gap:12px; }
+.home-button, .logout-button {
+  background:#fff;
+  border:1px solid #ffd166;
+  padding:6px 14px;
+  border-radius:8px;
+  text-decoration:none;
+  font-size:0.85rem;
+  font-weight:600;
+  color:#333;
+  cursor:pointer;
+  box-shadow:0 2px 4px rgba(0,0,0,0.15);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s, background .2s;
+  position:relative;
+}
+/* Enhanced pop style similar to details-button */
+.home-button.pop-btn {
+  background:#ff9500;
+  border:1px solid #e68400;
+  color:#333;
+  box-shadow:0 4px 10px rgba(0,0,0,0.18);
+  transform:translateY(-2px);
+}
+.home-button.pop-btn:hover {
+  background:#ffa733;
+  transform:translateY(-6px) scale(1.05);
+  box-shadow:0 10px 20px rgba(0,0,0,0.22);
+}
+.home-button.pop-btn:active {
+  background:#ff9500;
+  transform:translateY(-1px) scale(0.98);
+  box-shadow:0 3px 8px rgba(0,0,0,0.2);
+}
+/* Removed old logout pop styles since logout now mirrors login link */
+/* Make details-button share hover pop effect */
+.details-button {
+  display:inline-block;
+  margin-top:10px;
+  padding:6px 14px;
+  background:#ff9500;
+  color:#333;
+  text-decoration:none;
+  border-radius:8px;
+  font-weight:600;
+  box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s, background .2s;
+}
+.details-button:hover {
+  background:#ffa733;
+  transform:translateY(-4px) scale(1.05);
+  box-shadow:0 8px 18px rgba(0,0,0,0.22);
+}
+.details-button:active {
+  background:#ff9500;
+  transform:translateY(-1px) scale(0.97);
+  box-shadow:0 3px 8px rgba(0,0,0,0.2);
+}
+/* Optional pulse on focus for accessibility */
+.home-button:focus-visible, .logout-button:focus-visible {
+  outline:2px solid #ff9500;
+  outline-offset:2px;
 }
 .login-button {
   text-decoration: none;
@@ -49,6 +113,7 @@ footer {
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+/* amenity icon styling removed (reverted to text list) */
 .details-button {
   display: inline-block;
   margin-top: 10px;
