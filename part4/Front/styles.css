@@ -178,6 +178,63 @@ footer {
 .add-review-bottom { max-width:860px; margin: 0 auto 120px; text-align:center; }
 .add-review-bottom .details-button { margin-top:4px; }
 
+/* -------------- Review Form Page -------------- */
+body.review-page main { flex:1 0 auto; display:flex; align-items:center; justify-content:center; padding:40px 20px 140px; }
+#review-form.review-card {
+  width:100%;
+  max-width:520px;
+  background:#fff;
+  border:1px solid #e0e0e0;
+  border-radius:18px;
+  padding:40px 46px 46px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.12);
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s;
+}
+#review-form.review-card:hover { transform:translateY(-8px); box-shadow:0 16px 34px rgba(0,0,0,0.18); }
+#review-form.review-card h2 { font-size:1.9rem; margin:0 0 4px; text-align:center; }
+#review-form.review-card label { font-size:.85rem; font-weight:600; text-align:left; margin:4px 0 4px; }
+#review-form.review-card textarea {
+  width:100%;
+  padding:12px 14px;
+  border:1px solid #ccc;
+  border-radius:12px;
+  font-size:.9rem;
+  resize:vertical;
+  min-height:140px;
+  background:#fdfdfd;
+  transition:border-color .18s, box-shadow .18s;
+}
+#review-form.review-card input[type=number] {
+  width:110px;
+  padding:10px 12px;
+  border:1px solid #ccc;
+  border-radius:10px;
+  font-size:.9rem;
+  background:#fdfdfd;
+  transition:border-color .18s, box-shadow .18s;
+}
+#review-form.review-card textarea:focus,
+#review-form.review-card input[type=number]:focus { outline:none; border-color:#ff9500; box-shadow:0 0 0 3px rgba(255,149,0,0.25); }
+#review-form.review-card button[type=submit] {
+  background:#ff9500;
+  color:#333;
+  border:1px solid #e68400;
+  font-weight:600;
+  padding:12px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:.95rem;
+  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s, background .18s;
+}
+#review-form.review-card button[type=submit]:hover { background:#ffa733; transform:translateY(-4px); box-shadow:0 10px 20px rgba(0,0,0,0.20); }
+#review-form.review-card button[type=submit]:active { background:#ff9500; transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,0.18); }
+#review-form .rating-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+#review-form .rating-row small { font-size:.7rem; color:#555; font-weight:600; }
+
 /* -------------- Auth Pages -------------- */
 body.login-page main { flex:1 0 auto; display:flex; align-items:center; justify-content:center; padding:40px 20px 120px; }
 #login-form.auth-card {
